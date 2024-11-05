@@ -4,4 +4,4 @@ from config import settings
 
 bot = Bot(settings.TOKEN_API, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()
-db = Dispatcher(bot, storage=storage)
+dp = Dispatcher(bot, storage=storage)
