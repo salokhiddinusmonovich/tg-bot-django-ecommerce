@@ -32,6 +32,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+ADMIN_IDS = [7336334074] 
+
 
 TOKEN_API = env.str('TOKEN_API')
 
