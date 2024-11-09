@@ -60,6 +60,7 @@ async def cmd_description(message: types.Message):
 
 
 # Get profile command
+# @dp.message_handler(commands='getprofile')
 async def cmd_getprofile(message: types.Message):
     try:
         user = await get_user_by_chat_id(message.chat.id)
@@ -96,7 +97,7 @@ async def cmd_getprofile(message: types.Message):
         await message.answer(f"Ошибка при получении данных: {str(e)}")
 
 
-@dp.message_handler(commands='access')
+# @dp.message_handler(commands='access')
 async def cmd_access(message: types.Message):
     user = await get_user_by_chat_id(message.chat.id)
     if not user or not user.admin:
@@ -118,6 +119,40 @@ async def cmd_access(message: types.Message):
             await message.answer("❌ Пользователь не найден.")
     except Exception as e:
         await message.answer(f"Ошибка: {e}")
+
+
+# @dp.message_handler(commands='giverub')
+async def cmd_giverub(message: types.Message):
+    # Check if the user is an admin
+    user = await get_user_by_chat_id(message.chat.id)
+    if not user or not user.admin:
+        await message.answer("У вас нет прав для выполнения этой команды.")
+        return
+
+    # Extract the amount of rubles to give
+    args = message.get_args()
+    if not args or not args.isdigit():
+        await message.answer("Пожалуйста, укажите количество рублей для зачисления.")
+        return
+
+    amount = int(args)
+
+    # If the amount is positive, give the rubles
+    if amount <= 0:
+        await message.answer("Количество рублей должно быть положительным числом.")
+        return
+
+    # Get the target user by chat_id or login
+    target_user = await get_user_by_chat_id_or_user_login(args)
+    if target_user:
+        # Here, you would interact with a real payment gateway to process the money transfer
+        # For this mock example, we'll just add the rubles to the balance
+        target_user.balance += amount
+        await save_user(target_user)
+
+        await message.answer(f"Пользователь {target_user.user_login} получил {amount} рублей.")
+    else:
+        await message.answer("❌ Пользователь не найден.")
 
 
 @sync_to_async
@@ -147,3 +182,4 @@ def default_handlers_register():
     dp.register_message_handler(cmd_description, Text(equals='Описание 📌'))
     dp.register_message_handler(cmd_getprofile, commands='getprofile')
     dp.register_message_handler(cmd_access, commands='access')
+    dp.register_message_handler(cmd_giverub, commands='giverub')
