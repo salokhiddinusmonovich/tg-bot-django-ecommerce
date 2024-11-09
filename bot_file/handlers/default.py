@@ -17,6 +17,7 @@ HELP_TEXT = """
 <b>Помощь ⭐️</b> - помощь по командам бота
 <b>Описание 📌</b> - адрес, контактные данные, график работы
 <b>Каталог 🛒</b> - список товаров которые можно купить
+<b>Просмотр своего профиля</b> - просмотр своего профиля
 
 Но перед началом нужно <b>зарегистрироваться или войти</b> в свой профиль. 
 Нажми на команду <b>Регистрация ✌️'</b> или <b>Войти 👋</b>
@@ -123,36 +124,37 @@ async def cmd_access(message: types.Message):
 
 # @dp.message_handler(commands='giverub')
 async def cmd_giverub(message: types.Message):
-    # Check if the user is an admin
+    # Проверяем, является ли пользователь администратором
     user = await get_user_by_chat_id(message.chat.id)
     if not user or not user.admin:
         await message.answer("У вас нет прав для выполнения этой команды.")
         return
 
-    # Extract the amount of rubles to give
-    args = message.get_args()
-    if not args or not args.isdigit():
-        await message.answer("Пожалуйста, укажите количество рублей для зачисления.")
+    # Получаем аргументы команды
+    args = message.get_args().split()
+
+    # Проверяем, указано ли количество рублей и является ли оно числом
+    if len(args) != 2:
+        await message.answer("Пожалуйста, укажите количество рублей и логин пользователя, например: /giverub 100 'username.'")
         return
+    
+    amount = args[0]
+    target_login = args[1]
 
-    amount = int(args)
-
-    # If the amount is positive, give the rubles
-    if amount <= 0:
+    # Проверка, что количество рублей является положительным числом
+    if not amount.isdigit() or int(amount) <= 0:
         await message.answer("Количество рублей должно быть положительным числом.")
         return
 
-    # Get the target user by chat_id or login
-    target_user = await get_user_by_chat_id_or_user_login(args)
+    # Получаем пользователя по логину
+    target_user = await get_user_by_chat_id_or_user_login(target_login)
     if target_user:
-        # Here, you would interact with a real payment gateway to process the money transfer
-        # For this mock example, we'll just add the rubles to the balance
-        target_user.balance += amount
-        await save_user(target_user)
-
-        await message.answer(f"Пользователь {target_user.user_login} получил {amount} рублей.")
+        target_user.balance += int(amount)
+        await save_user(target_user)  # Сохраняем изменения
+        await message.answer(f"Пользователю {target_user.user_login} было зачислено {amount} рублей.")
     else:
-        await message.answer("❌ Пользователь не найден.")
+        await message.answer("❌ Пользователь с таким логином не найден.")
+
 
 
 @sync_to_async
