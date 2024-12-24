@@ -5,10 +5,11 @@ class Product(models.Model):
     photo = models.ImageField(verbose_name='Images', upload_to='products/')
     name = models.CharField(verbose_name='Names', max_length=100)
     description = models.TextField(verbose_name='Description', blank=False)
-    price = models.PositiveIntegerField(verbose_name='Price')
+    # price = models.PositiveIntegerField(verbose_name='Price')
     created_at = models.DateTimeField(verbose_name='Created date', auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name='Edited date', auto_now=True)
-
+    stock = models.IntegerField()
+    star = models.IntegerField(max_length=500)
 
     def __str__(self):
         return self.name
@@ -29,7 +30,6 @@ class TelegramUser(models.Model):
     admin = models.BooleanField(default=False)  # Флаг администратора
     bought_products = models.ManyToManyField(Product, blank=True)
     comment = models.TextField(blank=True)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def __str__(self):
         return self.user_login
@@ -40,12 +40,3 @@ class TelegramUser(models.Model):
         db_table = 'telegram_users'
         ordering = ['-registered_at']
 
-
-class Promocode(models.Model):
-    code = models.CharField(max_length=100, unique=True)  # Промокод
-    promo_name = models.CharField(max_length=100)  # Название промокода
-    reward = models.DecimalField(max_digits=10, decimal_places=2)  # Сумма вознаграждения для баланса
-    who_have = models.ManyToManyField(TelegramUser, related_name='promocodes')  # Пользователи, у которых есть этот промокод
-
-    def __str__(self):
-        return self.code
